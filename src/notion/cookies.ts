@@ -19,6 +19,19 @@ export async function loadCookies(page: Page, cookieFile?: string) {
     throw new Error('Cookie file is empty or invalid. Expected array or { cookies: [] }.');
   }
 
+  for (const c of cookies) {
+    if (!c || typeof c !== 'object') {
+      throw new Error('Cookie entry must be an object.');
+    }
+    const o = c as Record<string, unknown>;
+    if (typeof o.name !== 'string' || typeof o.value !== 'string') {
+      throw new Error('Each cookie must include string fields: name, value.');
+    }
+    if (typeof o.domain !== 'string' && typeof o.url !== 'string') {
+      throw new Error('Each cookie must include domain or url.');
+    }
+  }
+
   await page.setCookie(...(cookies as never[]));
   return cookies.length;
 }

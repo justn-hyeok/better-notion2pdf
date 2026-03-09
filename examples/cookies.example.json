@@ -1,0 +1,12 @@
+{
+  "cookies": [
+    {
+      "name": "token_v2",
+      "value": "YOUR_NOTION_TOKEN",
+      "domain": ".notion.so",
+      "path": "/",
+      "httpOnly": true,
+      "secure": true
+    }
+  ]
+}
