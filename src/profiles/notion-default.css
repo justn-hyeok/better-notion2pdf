@@ -1,0 +1,27 @@
+/* Keep content readable, remove app chrome only */
+h1, h2, .notion-header-block {
+  break-before: page !important;
+  page-break-before: always !important;
+}
+
+.notion-callout-block,
+blockquote,
+.notion-image-block,
+.notion-code-block,
+pre,
+code,
+table,
+tr {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* keep text readable */
+body {
+  line-height: 1.55 !important;
+}

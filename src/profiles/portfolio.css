@@ -1,0 +1,43 @@
+/* Portfolio profile: stronger readability and safer page breaks */
+h1, h2, .notion-header-block {
+  break-before: page !important;
+  page-break-before: always !important;
+}
+
+.notion-callout-block,
+.notion-quote-block,
+blockquote,
+.notion-image-block,
+.notion-code-block,
+pre,
+table,
+tr,
+.notion-toggle-block,
+.notion-collection_view-block {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+/* Keep image quality untouched (no re-encoding in pipeline) */
+img,
+.notion-image-block img {
+  max-width: 100% !important;
+  height: auto !important;
+  image-rendering: auto !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Keep code blocks readable and unbroken */
+pre,
+.notion-code-block {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+
+body {
+  line-height: 1.5 !important;
+  letter-spacing: 0.01em !important;
+}
