@@ -45,8 +45,9 @@ program
       const msg = error instanceof Error ? error.message : String(error);
       logError(msg);
 
-      if (/timeout/i.test(msg)) process.exit(20);
-      if (/auth|permission|login|not found|403|401/i.test(msg)) process.exit(30);
+      if (/timeout|navigation timeout/i.test(msg)) process.exit(20);
+      if (/auth|permission|login|forbidden|401|403|object_not_found/i.test(msg)) process.exit(30);
+      if (/EACCES|ENOENT|write|pdf|output/i.test(msg)) process.exit(40);
       process.exit(50);
     }
   });

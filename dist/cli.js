@@ -44,7 +44,10 @@ async function cleanNotionAppUI(page, level = "soft") {
       removeSelectors.push(
         ".notion-table_of_contents-block",
         ".notion-page-cover-wrapper",
-        ".notion-breadcrumb"
+        ".notion-breadcrumb",
+        ".notion-backlinks",
+        ".notion-page-link .notion-focusable",
+        '[aria-label="Open in Notion"]'
       );
     }
     for (const selector of removeSelectors) {
@@ -155,6 +158,18 @@ async function loadCookies(page, cookieFile) {
   const cookies = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.cookies) ? parsed.cookies : [];
   if (!cookies.length) {
     throw new Error("Cookie file is empty or invalid. Expected array or { cookies: [] }.");
+  }
+  for (const c of cookies) {
+    if (!c || typeof c !== "object") {
+      throw new Error("Cookie entry must be an object.");
+    }
+    const o = c;
+    if (typeof o.name !== "string" || typeof o.value !== "string") {
+      throw new Error("Each cookie must include string fields: name, value.");
+    }
+    if (typeof o.domain !== "string" && typeof o.url !== "string") {
+      throw new Error("Each cookie must include domain or url.");
+    }
   }
   await page.setCookie(...cookies);
   return cookies.length;
@@ -293,8 +308,9 @@ program.name("better-notion2pdf").description("Readable Notion-to-PDF builder wi
     }
     const msg = error instanceof Error ? error.message : String(error);
     logError(msg);
-    if (/timeout/i.test(msg)) process.exit(20);
-    if (/auth|permission|login|not found|403|401/i.test(msg)) process.exit(30);
+    if (/timeout|navigation timeout/i.test(msg)) process.exit(20);
+    if (/auth|permission|login|forbidden|401|403|object_not_found/i.test(msg)) process.exit(30);
+    if (/EACCES|ENOENT|write|pdf|output/i.test(msg)) process.exit(40);
     process.exit(50);
   }
 });

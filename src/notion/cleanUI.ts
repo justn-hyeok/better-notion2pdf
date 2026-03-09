@@ -21,7 +21,10 @@ export async function cleanNotionAppUI(page: Page, level: 'soft' | 'hard' = 'sof
       removeSelectors.push(
         '.notion-table_of_contents-block',
         '.notion-page-cover-wrapper',
-        '.notion-breadcrumb'
+        '.notion-breadcrumb',
+        '.notion-backlinks',
+        '.notion-page-link .notion-focusable',
+        '[aria-label="Open in Notion"]'
       );
     }
 
