@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { z } from 'zod';
 import { buildPdf } from './build.js';
 import { CliOptionsSchema } from './types.js';
+import { PdfTimeoutError, PdfAuthError, PdfOutputError } from './errors.js';
 import { logError } from './utils/logger.js';
 
 const program = new Command();
@@ -24,6 +25,7 @@ program
   .option('--code-font-size <px>', 'Code font size in px (8-16)', '11')
   .option('--debug-shot <path>', 'Save full page screenshot before PDF')
   .option('--debug-html <path>', 'Save page HTML and injected css')
+  .option('--no-sandbox', 'Disable Chromium sandbox (for Docker/CI)')
   .option('--verbose', 'Verbose logs')
   .action(async (raw) => {
     try {
@@ -32,6 +34,7 @@ program
         waitMs: Number(raw.waitMs),
         timeoutMs: Number(raw.timeoutMs),
         codeFontSize: Number(raw.codeFontSize),
+        noSandbox: raw.sandbox === false,
       });
 
       await buildPdf(parsed);
@@ -45,9 +48,9 @@ program
       const msg = error instanceof Error ? error.message : String(error);
       logError(msg);
 
-      if (/timeout|navigation timeout/i.test(msg)) process.exit(20);
-      if (/auth|permission|login|forbidden|401|403|object_not_found/i.test(msg)) process.exit(30);
-      if (/EACCES|ENOENT|write|pdf|output/i.test(msg)) process.exit(40);
+      if (error instanceof PdfTimeoutError) process.exit(20);
+      if (error instanceof PdfAuthError) process.exit(30);
+      if (error instanceof PdfOutputError) process.exit(40);
       process.exit(50);
     }
   });

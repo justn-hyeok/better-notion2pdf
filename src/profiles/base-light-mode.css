@@ -1,0 +1,22 @@
+/* Force light mode for PDF output */
+html, body,
+.notion-body,
+.notion-app-inner,
+.notion-frame,
+.notion-page-content,
+.notion-scroller,
+.notion-callout-block,
+.notion-quote-block,
+.notion-code-block {
+  background-color: white !important;
+  color: #37352f !important;
+}
+
+/* Background-only reset for all nested content (preserves colored text) */
+.notion-page-content * {
+  background-color: white !important;
+}
+
+/* Preserve colored text and links */
+a { color: #2383e2 !important; }
+.notion-callout-block { border-color: #e0e0e0 !important; }

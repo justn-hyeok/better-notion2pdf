@@ -2,6 +2,7 @@
 h1, h2, .notion-header-block {
   break-before: page !important;
   page-break-before: always !important;
+  color: #37352f !important;
 }
 
 .notion-callout-block,

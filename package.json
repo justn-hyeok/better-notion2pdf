@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "tsx src/cli.ts",
-    "build": "tsup src/cli.ts --format esm --dts --clean",
+    "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

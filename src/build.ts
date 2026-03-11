@@ -3,6 +3,7 @@ import path from 'node:path';
 import puppeteer from 'puppeteer';
 import ora from 'ora';
 import { CliOptions } from './types.js';
+import { PdfTimeoutError, PdfAuthError, PdfOutputError } from './errors.js';
 import { parseMargin } from './utils/parseMargin.js';
 import { cleanNotionAppUI } from './notion/cleanUI.js';
 import { autoScrollToBottom, waitForImages, waitForLayoutStable } from './notion/waitForRender.js';
@@ -14,7 +15,7 @@ export async function buildPdf(options: CliOptions) {
   const spinner = ora('Launching browser').start();
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: options.noSandbox ? ['--no-sandbox', '--disable-setuid-sandbox'] : [],
   });
 
   try {
@@ -28,7 +29,14 @@ export async function buildPdf(options: CliOptions) {
     }
 
     spinner.text = 'Opening Notion page';
-    await page.goto(options.url, { waitUntil: 'networkidle2' });
+    try {
+      await page.goto(options.url, { waitUntil: 'networkidle2' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/timeout|navigation timeout/i.test(msg)) throw new PdfTimeoutError(msg);
+      if (/net::ERR_ABORTED|403|401|object_not_found/i.test(msg)) throw new PdfAuthError(msg);
+      throw err;
+    }
 
     spinner.text = 'Waiting for lazy content';
     await autoScrollToBottom(page);
@@ -40,7 +48,11 @@ export async function buildPdf(options: CliOptions) {
       spinner.warn('Some images did not fully load in time. Continuing...');
       spinner.start('Continuing build');
     }
-    await waitForLayoutStable(page);
+    const layout = await waitForLayoutStable(page);
+    if (!layout.stable && options.verbose) {
+      spinner.warn('Layout did not stabilize within iteration limit. Continuing...');
+      spinner.start('Continuing build');
+    }
 
     if (!options.keepUi) {
       spinner.text = 'Cleaning app UI';
@@ -69,13 +81,18 @@ export async function buildPdf(options: CliOptions) {
     }
 
     spinner.text = 'Generating PDF';
-    await page.pdf({
-      path: outPath,
-      format: options.format,
-      printBackground: true,
-      margin: parseMargin(options.margin),
-      preferCSSPageSize: true,
-    });
+    try {
+      await page.pdf({
+        path: outPath,
+        format: options.format,
+        printBackground: true,
+        margin: parseMargin(options.margin),
+        preferCSSPageSize: true,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new PdfOutputError(msg);
+    }
 
     const removedUiCount = await page.evaluate(() =>
       (window as unknown as { __better_notion2pdf_removed?: number }).__better_notion2pdf_removed ?? 0
